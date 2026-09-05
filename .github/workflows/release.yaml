@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions: {}
 
@@ -39,7 +40,11 @@ jobs:
           chart_changed=false
           version_changed=false
 
-          if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual runs publish the version currently present in Chart.yaml.
+            chart_changed=true
+            version_changed=true
+          elif [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
             # The first commit introduces the chart and its initial version.
             chart_changed=true
             version_changed=true
@@ -131,9 +136,10 @@ jobs:
           git push origin "HEAD:refs/heads/gh-pages"
 
       - name: Publish chart release and index
-        uses: helm/chart-releaser-action@v1.7.0
+        uses: helm/chart-releaser-action@3e001cb8c68933439c7e721650f20a07a1a5c61e # fix skip_packaging chart_version bug
         with:
           charts_dir: .
+          config: .cr.yaml
           skip_packaging: true
           skip_existing: true
         env:
@@ -174,13 +180,15 @@ jobs:
           fi
 
           current_version=$(awk '$1 == "version:" { print $2; exit }' "$CHART_PATH" | tr -d '"')
-          if [[ ! "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          if [[ ! "$current_version" =~ ^v?([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             echo "Unsupported chart version: $current_version" >&2
             exit 1
           fi
 
+          major_version="${BASH_REMATCH[1]}"
+          minor_version="${BASH_REMATCH[2]}"
           patch_version=$((10#${BASH_REMATCH[3]} + 1))
-          next_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${patch_version}"
+          next_version="v${major_version}.${minor_version}.${patch_version}"
           sed -i.bak -E "s/^version:[[:space:]]*.*/version: ${next_version}/" "$CHART_PATH"
           rm -f "${CHART_PATH}.bak"
 
@@ -208,9 +216,10 @@ jobs:
           git push origin "HEAD:refs/heads/gh-pages"
 
       - name: Publish chart release and index
-        uses: helm/chart-releaser-action@v1.7.0
+        uses: helm/chart-releaser-action@3e001cb8c68933439c7e721650f20a07a1a5c61e # fix skip_packaging chart_version bug
         with:
           charts_dir: .
+          config: .cr.yaml
           skip_packaging: true
           skip_existing: true
         env:
