@@ -1,0 +1,46 @@
+{{- if eq .Values.kind "Deployment" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- include "bettertpl" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    {{- with .Values.labels }}
+    {{- include "bettertpl" (dict "value" . "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 10 }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end -}}
+
+  {{- with .Values.rollout }}
+  strategy:
+    type: {{ .type }}
+    {{- if eq .type "RollingUpdate" }}
+    {{- with .rollingUpdate }}
+    rollingUpdate: {{ toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- include "bettertpl" (dict "value" . "context" $) | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- include "bettertpl" (dict "value" . "context" $) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "common.pod" . | nindent 6 }}
+{{- end }}

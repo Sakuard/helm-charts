@@ -1,0 +1,17 @@
+{{- with .Values.persistence }}
+{{- if and (eq .type "disk") .enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.fullname" $ }}-pvc
+  namespace: {{ $.Release.Namespace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .capacity }}
+  storageClassName: standard
+{{- end }}
+{{- end }}

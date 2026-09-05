@@ -1,0 +1,47 @@
+{{- with .Values.serviceMonitor }}
+{{- if .enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ default $.Release.Namespace .namespace }}
+  labels:
+    {{- include "common.labels" $ | nindent 4 }}
+    {{- include "bettertpl" (dict "value" .labels "context" $) | nindent 4 }}
+spec:
+  {{- with .jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  endpoints:
+    - port: {{ .port }}
+      {{- with .path }}
+      path: {{ . }}
+      {{- end -}}
+
+      {{- with .interval }}
+      interval: {{ . }}
+      {{- end -}}
+
+      {{- with .scrapeTimeout }}
+      scrapeTimeout: {{ . }}
+      {{- end -}}
+
+      {{- with .relabelings }}
+      relabelings: {{ include "bettertpl" (dict "value" . "context" $) | nindent 8 }}
+      {{- end -}}
+
+      {{- with .metricRelabelings }}
+      metricRelabelings: {{ include "bettertpl" (dict "value" . "context" $) | nindent 8 }}
+      {{- end -}}
+
+      {{- with .honorLabels }}
+      honorLabels: {{ . }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ $.Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "common.labels" $ | nindent 6 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,414 @@
+# Default values for common.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Override value for the name of the Helm chart.
+nameOverride: ""
+
+# Override value for the fully qualified app name.
+fullnameOverride: ""
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
+# https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod
+imagePullSecrets: []
+
+# Number of revisions to retain to allow rollback in the underlying StatefulSets.
+# By default, if not set, Kubernetes sets 10.
+revisionHistoryLimit: 10
+
+# kind: DaemonSet
+kind: Deployment
+replicaCount: 1
+
+rollout:
+  rollingUpdate: {}
+  #   maxSurge: 25%
+  #   maxUnavailable: 0
+  type: RollingUpdate
+
+# Duration in seconds to wait for the pod to terminate gracefully.
+terminationGracePeriodSeconds: 24
+
+args: []
+#   - "--web.listen-address=:9090"
+#   - "--query.project-id=$PROJECT_ID"
+
+# List of environment variables to set in the container.
+# https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+env: {}
+#   OTEL_SERVICE_NAME: common
+#   OTEL_TRACES_EXPORTER: otlp
+#   OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+#   OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector.opentelemetry:4318"
+
+envFrom: []
+#   - configMapRef: '{{ include "common.fullname" . }}-fluent-bit'
+#     optional: false
+#   - secretRef: '{{ include "common.fullname" . }}-config'
+#     optional: false
+
+# This also supports template content, which will eventually be converted to yaml.
+# https://kubernetes.io/docs/concepts/storage/volumes
+extraVolumes: []
+  # - name: fluent-bit
+  #   configMap:
+  #     name: '{{ include "common.fullname" . }}-fluent-bit'
+  #     optional: true
+  #     items:
+  #       - key: config
+  #         path: fluent.conf
+  # - name: config
+  #   secret:
+  #     secretName: '{{ include "common.fullname" . }}-config'
+  #     optional: true
+  # - name: cache-volume
+  #   emptyDir:
+  #     sizeLimit: 500Mi
+  #     medium: Memory
+  # - name: hostpath
+  #   hostPath:
+  #     path: /
+  #     type: Directory
+  # - name: artifact
+  #   image:
+  #     reference: quay.io/crio/artifact:v2
+  #     pullPolicy: IfNotPresent
+  # - name: nfs
+  #   nfs:
+  #     server: nfs.example.com
+  #     path: /my-nfs
+  #     readOnly: true
+  # - name: pvc
+  #   persistentVolumeClaim:
+  #     claimName: my-pvc
+
+# This also supports template content, which will eventually be converted to yaml.
+# https://kubernetes.io/docs/concepts/storage/volumes
+extraVolumeMounts: []
+  # - mountPath: /var/www/html
+  #   name: nfs
+  #   subPath: html
+  #   readOnly: true
+
+volumeClaimTemplates: []
+#   - metadata:
+#       name: www
+#     spec:
+#       accessModes: ["ReadWriteOnce"]
+#       storageClassName: "my-storage-class"
+#       resources:
+#         requests:
+#           storage: 1Gi
+
+extraContainers: []
+#   - name: fluent-bit
+#     image: fluent/fluent-bit:2.2.0
+#     volumeMounts:
+#       - mountPath: /fluent-bit/etc/fluent-bit.conf
+#         name: '{{ include "common.fullname" . }}-fluent-bit'
+#         subPath: fluent-bit.conf
+
+# List of initialization containers belonging to the pod.
+# https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+initContainers: []
+#   - command:
+#       - sh
+#       - "-c"
+#       - sysctl -w vm.max_map_count=262144
+#     name: sysctl
+#     securityContext:
+#       privileged: true
+#   - name: test
+#     image: busybox:latest
+#     command:
+#       - cp
+#     args:
+#       - /bin/sleep
+#       - /test/sleep
+#     volumeMounts:
+#       - name: test
+#         mountPath: /test
+
+annotations: {}
+labels: {}
+
+podAnnotations: {}
+podLabels: {}
+
+# If specified, indicates the pod's priority. "system-node-critical" and "system-cluster-critical" are two special keywords which indicate the highest priorities with the former being the highest priority.
+# Any other name must be defined by creating a PriorityClass object with that name. If not specified, the pod priority will be default or zero if there is no default.
+# https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+priorityClassName: ""
+
+# SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty. See type description for default values of each field.
+podSecurityContext: {}
+#   fsGroup: 2000
+
+# SecurityContext defines the security options the container should be run with.
+# If set, the fields of SecurityContext override the equivalent fields of PodSecurityContext.
+securityContext: {}
+#   capabilities:
+#     drop:
+#     - ALL
+#   readOnlyRootFilesystem: true
+#   runAsNonRoot: true
+#   runAsUser: 1000
+
+# Compute Resources required by this container.
+# Requests describes the minimum amount of compute resources required. If Requests is omitted for a container,
+# it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value.
+resources: {}
+#   limits:
+#     cpu: 100m
+#     memory: 128Mi
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+
+# Pod lifecycle policies.
+lifecycle: {}
+#   preStop:
+#     exec:
+#       command:
+#         - /test/sleep
+#         - "5"
+
+startupProbe: {}
+#   initialDelaySeconds: 30
+#   timeoutSeconds: 30
+#   periodSeconds: 10
+#   successThreshold: 1
+#   failureThreshold: 6
+#   httpGet:
+#     path: /
+#     port: http
+
+livenessProbe: {}
+#   initialDelaySeconds: 30
+#   timeoutSeconds: 30
+#   periodSeconds: 10
+#   successThreshold: 1
+#   failureThreshold: 6
+#   httpGet:
+#     path: /
+#     port: http
+
+readinessProbe: {}
+#   initialDelaySeconds: 30
+#   timeoutSeconds: 30
+#   periodSeconds: 10
+#   successThreshold: 1
+#   failureThreshold: 6
+#   httpGet:
+#     path: /
+#     port: http
+
+# NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node.
+# https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+# https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-advanced-node-scheduling.html
+nodeSelector: {}
+#   cloud.google.com/gke-nodepool: default-pool
+#   diskType: ssd
+#   environment: production
+
+# If specified, the pod's tolerations that will apply to all containers within the pod.
+# https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: []
+#   - key: "node-role.kubernetes.io/worker"
+#     effect: "NoSchedule"
+#     operator: "Exists"
+
+# TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
+# Scheduler will schedule pods in a way which abides by the constraints. All topologySpreadConstraints are ANDed.
+topologySpreadConstraints: []
+#   - maxSkew: 1
+#     topologyKey: zone
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         foo: bar
+#   - maxSkew: 1
+#     topologyKey: node
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         foo: bar
+
+# If specified, the pod's scheduling constraints
+# https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-advanced-node-scheduling.html
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+affinity: {}
+
+hostAliases: []
+#   - ip: "8.8.8.8"
+#     hostnames:
+#       - "dns.google"
+
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+service:
+  enabled: true
+
+  # annotations:
+  #   networking.gke.io/load-balancer-type: "Internal"
+
+  # ClusterIP / NodePort / LoadBalancer / None
+  type: ClusterIP
+  clusterIP: ""
+
+  # type: LoadBalancer
+  loadBalancerIP: ""
+  loadBalancerClass: ""
+  loadBalancerSourceRanges: []
+
+  internalTrafficPolicy: Cluster
+  externalTrafficPolicy: Cluster
+  
+  # None / ClientIP
+  sessionAffinity: None
+  sessionAffinityConfig: {}
+  #   clientIP:
+  #     timeoutSeconds: 300
+
+  trafficDistribution: ""
+
+  ports:
+    http:
+      enabled: true
+      protocol: TCP
+      servicePort: 80
+      containerPort: 80
+      # appProtocol: http
+      # nodePort: 30007
+      # hostPort: 30008
+    https:
+      enabled: false
+      protocol: TCP
+      servicePort: 443
+      containerPort: 443
+      # appProtocol: tcp
+      # nodePort: 30009
+      # hostPort: 30010
+    metric-http:
+      enabled: false
+      protocol: TCP
+      servicePort: 9090
+      containerPort: 9090
+      # appProtocol: http
+      # nodePort: 30007
+      # hostPort: 30008
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  #   kubernetes.io/ingress.class: nginx
+  #   kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          port: http
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# Settings to limit the disruption when pods need to be rescheduled for some reason such as upgrades or routine maintenance.
+podDisruptionBudget:
+  enabled: false
+  # minAvailable: 2
+  # maxUnavailable: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 0
+
+  metrics: []
+
+  behavior: {}
+  # behavior:
+  #   scaleDown:
+  #     stabilizationWindowSeconds: 300
+  #     policies:
+  #       - type: Percent
+  #         value: 100
+  #         periodSeconds: 15
+  #   scaleUp:
+  #     stabilizationWindowSeconds: 0
+  #     policies:
+  #       - type: Percent
+  #         value: 100
+  #         periodSeconds: 15
+  #       - type: Pods
+  #         value: 4
+  #         periodSeconds: 15
+  #     selectPolicy: Max
+
+# ServiceMonitor configuration
+serviceMonitor:
+  enabled: false
+
+  namespace: ""
+  labels: {}
+
+  path: ""
+  port: metric-http
+  interval: 30s
+  scrapeTimeout: ""
+  relabelings: []
+  metricRelabelings: []
+  honorLabels: false
+  jobLabel: ""
+
+extraObjects: {}
+#   secretConfig:
+#     enabled: true
+#     spec: |
+#       apiVersion: v1
+#       kind: Secret
+#       metadata:
+#         name: {{ include "common.fullname" . }}-config
+#         namespace: {{ .Release.Namespace }}
+#         labels:
+#           {{- include "common.labels" . | nindent 4 }}
+#       data:
+#         config.yml: {{ "ENV=local" | b64enc | quote }}
+#   fluent-bit-config:
+#     enabled: true
+#     spec: |
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: {{ include "common.fullname" . }}-fluent-bit
+#         labels:
+#           {{- include "common.labels" . | nindent 4 }}
+#       data:
+#         fluent-bit.conf: |
+#           [SERVICE]
+#               Flush         1
+#               Daemon        Off
+#               Parsers_File  parsers.conf
+#           [INPUT]
+#               Name          tcp
+#           [OUTPUT]
+#               Name          stdout
+#               Match         *

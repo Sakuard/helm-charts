@@ -1,0 +1,74 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.fullname" . }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- include "bettertpl" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if not (eq .Values.service.type "None") }}
+  {{- with .Values.service.clusterIP }}
+  clusterIP: {{ . }}
+  {{- end }}
+  {{- end -}}
+
+  {{- if not (eq .Values.service.type "None") }}
+  {{- with .Values.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ . | quote }}
+  {{- end }}
+  {{- end -}}
+
+  {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort") }}
+  {{- with .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ . | quote }}
+  {{- end }}
+  {{- end -}}
+
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  {{- with .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end -}}
+
+  {{- with .Values.service.sessionAffinity }}
+  sessionAffinity: {{ . }}
+  {{- end }}
+  {{- with .Values.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- include "bettertpl" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+
+  {{- with .Values.service.trafficDistribution }}
+  trafficDistribution: {{ . }}
+  {{- end }}
+
+  {{- with .Values.service.ports }}
+  ports:
+    {{- range $key, $port := . }}
+    {{- if or $port.enabled (eq $port.enabled nil) }}
+    - name: {{ $key }}
+      targetPort: {{ $port.containerPort }}
+      port: {{ $port.servicePort }}
+      protocol: {{ $port.protocol }}
+      {{- with $port.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
+      {{- with $port.appProtocol }}
+      appProtocol: {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  selector:
+    {{- include "common.selectorLabels" . | nindent 4 }}
+{{- end }}

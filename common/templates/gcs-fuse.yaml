@@ -1,0 +1,40 @@
+{{- with .Values.persistence }}
+{{- if and (eq .type "gcs-fuse") .enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "common.fullname" $ }}-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 1Gi
+  storageClassName: {{ include "common.fullname" $ }}-sc
+  mountOptions:
+    - implicit-dirs
+    {{- if .subPath }}
+    - only-dir={{ .subPath }}
+    {{- end }}
+  csi:
+    driver: gcsfuse.csi.storage.gke.io      # gcsfuse 的 csi driver
+    volumeHandle: {{ .bucketName }}
+  claimRef:
+    name: {{ include "common.fullname" $ }}-pvc           # PVC
+    namespace: {{ $.Release.Namespace }}
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.fullname" $ }}-pvc
+  namespace: {{ $.Release.Namespace }}
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ include "common.fullname" $ }}-sc
+{{- end }}
+{{- end }}

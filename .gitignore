@@ -1,0 +1,4 @@
+.cr-index/
+.cr-release-packages/
+changed_charts.txt
+chart_version.txt
