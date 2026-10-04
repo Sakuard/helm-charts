@@ -13,7 +13,7 @@ helm repo update
 
 ```sh
 helm upgrade --install jarvis sakuard/common \
-  --version v0.1.0 \
+  --version 0.1.0 \
   --namespace jarvis \
   --create-namespace
 ```
@@ -36,8 +36,10 @@ existing `cosparks/infra/helmfile/cosparks/jarvis` deployment.
 - After confirmation, the workflow increments the patch version, commits it to
   `main`, and publishes the chart.
 - Helm chart metadata, package filenames, and GitHub Release names use the
-  `v0.1.0` format: `version: v0.1.0`, `common-v0.1.0.tgz`, and
-  `common-v0.1.0`.
+  `0.1.0` format: `version: 0.1.0`, `common-0.1.0.tgz`, and
+  `common-0.1.0`.
+- After publishing, the workflow downloads the release package and synchronizes
+  its URL and checksum into the index, including when retrying an existing release.
 - GitHub Pages must serve the `gh-pages` branch from its repository root. Set
   this once in **Settings → Pages → Deploy from a branch**.
 
