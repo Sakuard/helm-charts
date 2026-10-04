@@ -3,12 +3,12 @@ entries:
   common:
   - apiVersion: v2
     appVersion: v0.1.0
-    created: "2026-09-05T00:10:55.697755787Z"
+    created: "2026-10-04T15:46:59.155232+08:00"
     description: Reusable common workload chart for Kubernetes
-    digest: 4be152bd055a3e615ed88ac2bb6345dbff6e747896d5256a3fa00a5dc4c77255
+    digest: 858cfcf2427eadcf8f76a978400e50ba77a12cddb08f67d6a8d028aa83f2f861
     name: common
     type: application
     urls:
-    - https://github.com/Sakuard/helm-charts/releases/download/common-0.1.0/common-0.1.0.tgz
-    version: 0.1.0
-generated: "2026-09-05T00:10:55.697758808Z"
+    - https://github.com/Sakuard/helm-charts/releases/download/common-v0.1.0/common-v0.1.0.tgz
+    version: v0.1.0
+generated: "2026-10-04T15:46:59.15043+08:00"
