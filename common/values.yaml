@@ -260,6 +260,22 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# RBAC for the chart's ServiceAccount. Nothing is rendered unless enabled.
+rbac:
+  enabled: false
+  # Namespaced Role + RoleBinding, bound to the chart's ServiceAccount
+  rules: []
+  #  - apiGroups: ["batch"]
+  #    resources: ["jobs"]
+  #    verbs: ["get", "list", "watch", "create"]
+  # Optional cluster-scoped permissions (ClusterRole + ClusterRoleBinding)
+  clusterRules: []
+  # Bind extra subjects besides the chart ServiceAccount (optional)
+  extraSubjects: []
+  #  - kind: Group
+  #    name: system:authenticated
+  #    apiGroup: rbac.authorization.k8s.io
+
 service:
   enabled: true
 

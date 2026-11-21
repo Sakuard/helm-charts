@@ -13,13 +13,53 @@ helm repo update
 
 ```sh
 helm upgrade --install jarvis sakuard/common \
-  --version 0.1.0 \
+  --version 0.2.0 \
   --namespace jarvis \
   --create-namespace
 ```
 
 Pass application-specific settings with one or more `--values` files, as in the
 existing `cosparks/infra/helmfile/cosparks/jarvis` deployment.
+
+## RBAC
+
+Set `rbac.enabled: true` to render a `Role` and `RoleBinding` (named after
+`common.fullname`) bound to the chart's ServiceAccount. Nothing is rendered by
+default. `rules`, `clusterRules` and `extraSubjects` support template content.
+
+| Value | Description |
+| --- | --- |
+| `rbac.enabled` | Render RBAC resources (default `false`). |
+| `rbac.rules` | Rules of the namespaced `Role`; no Role is rendered when empty. |
+| `rbac.clusterRules` | When non-empty, also renders a `ClusterRole` and `ClusterRoleBinding` named `<namespace>-<fullname>`. |
+| `rbac.extraSubjects` | Extra subjects added to the bindings besides the ServiceAccount. |
+
+Example, with the permissions an operator needs:
+
+```yaml
+rbac:
+  enabled: true
+  rules:
+    - apiGroups: ["batch"]
+      resources: ["jobs"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    - apiGroups: [""]
+      resources: ["configmaps", "pods"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    - apiGroups: [""]
+      resources: ["pods/log"]
+      verbs: ["get"]
+    - apiGroups: ["events.k8s.io"]
+      resources: ["events"]
+      verbs: ["create", "patch"]
+    - apiGroups: ["coordination.k8s.io"]
+      resources: ["leases"]
+      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # clusterRules:
+  #   - apiGroups: [""]
+  #     resources: ["namespaces"]
+  #     verbs: ["get", "list", "watch"]
+```
 
 ## Release flow
 
