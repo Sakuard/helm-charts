@@ -1,0 +1,61 @@
+{{- if .Values.rbac.enabled }}
+{{- if .Values.rbac.rules }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "common.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+  {{- include "bettertpl" (dict "value" .Values.rbac.rules "context" $) | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "common.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "common.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "common.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+  {{- with .Values.rbac.extraSubjects }}
+  {{- include "bettertpl" (dict "value" . "context" $) | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- if .Values.rbac.clusterRules }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ printf "%s-%s" .Release.Namespace (include "common.fullname" .) }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+rules:
+  {{- include "bettertpl" (dict "value" .Values.rbac.clusterRules "context" $) | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ printf "%s-%s" .Release.Namespace (include "common.fullname" .) }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s-%s" .Release.Namespace (include "common.fullname" .) }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "common.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+  {{- with .Values.rbac.extraSubjects }}
+  {{- include "bettertpl" (dict "value" . "context" $) | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}
